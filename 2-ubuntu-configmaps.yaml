@@ -1,0 +1,52 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ubuntu-cm
+data:
+  CM_CREATE_ADMIN_USER: "true"
+  CM_ADMIN_USER: "user"
+  CM_MANAGEMENT_USER: "manager"
+  CM_HTTP_PORT: "8080"
+  CM_PROXY_ADDRESS_FORWARDING: "false"
+  CM_ENABLE_STATISTICS: "false"
+  CM_DATABASE_HOST: "postgresql"
+  CM_DATABASE_PORT: "5432"
+  CM_DATABASE_NAME: "bitnami_keycloak"
+  CM_DATABASE_USER: "bn_keycloak"
+  CM_ENABLE_TLS: "false"
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu
+  template:
+    metadata:
+      labels:
+        app: ubuntu
+    spec:
+      containers:
+      - name: ubuntu
+        image: ubuntu
+        command: ["/bin/sleep","infinity"]
+        env:
+          - name: CUSTOM_DATA
+            value: "false"
+        envFrom:
+          - configMapRef:
+              name: ubuntu-cm
+        volumeMounts:
+          - name: config-volume
+            mountPath: /etc/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: ubuntu-cm
+
+
